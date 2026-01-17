@@ -131,6 +131,11 @@ class Player extends Model
         return $this->attributes['server'] ?? null;
     }
 
+    public function punishments()
+    {
+        return $this->hasMany(Punischment::class, 'player_id'); // Adjust 'player_id' to your foreign key column name
+    }
+
     public function getBingoStatsSummary(): array
     {
         $formatDuration = fn ($seconds) => $seconds
