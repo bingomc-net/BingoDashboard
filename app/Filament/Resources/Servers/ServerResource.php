@@ -19,7 +19,7 @@ class ServerResource extends Resource
 {
     protected static ?string $model = BingoServer::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::ServerStack;
 
     protected static ?string $recordTitleAttribute = 'Server';
 
