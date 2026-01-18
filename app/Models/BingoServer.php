@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class BingoServer extends Model
 {
@@ -26,21 +25,62 @@ class BingoServer extends Model
 
     public function sessions()
     {
-        return $this->hasMany(PlayerSession::class, 'server_id', 'id');
+        return PlayerSession::where('server_id', 'game_' . $this->id)
+            ->orWhere('server_id', 'lobby_' . $this->id);
     }
 
     public function onlinePlayers()
     {
-        return $this->sessions()->whereNull('session_end');
+        return PlayerSession::where(function($query) {
+            $query->where('server_id', 'game_' . $this->id)
+                ->orWhere('server_id', 'lobby_' . $this->id);
+        })
+            ->whereNull('session_end');
     }
 
-    public function chatMessages()
+    public function getChatMessagesAttribute()
     {
-        return $this->hasMany(ChatMessage::class, 'server_id');
+        return \App\Models\ChatMessage::where('server', 'game_' . $this->id)
+            ->orWhere('server', 'lobby_' . $this->id)
+            ->orderBy('sent_at', 'desc')
+            ->get();
     }
-
     public function usernames()
     {
         return $this->hasMany(Player::class, 'server_id', 'id');
+    }
+
+    public function onlinePlayersWithPlayer()
+    {
+        return $this->onlinePlayers()->with('player');
+    }
+
+    public function allPlayersWithStats()
+    {
+        return PlayerSession::where(function($query) {
+            $query->where('server_id', 'game_' . $this->id)
+                ->orWhere('server_id', 'lobby_' . $this->id);
+        })
+            ->select(
+                'minecraft_id',
+                \DB::raw('MIN(session_start) as first_join'),
+                \DB::raw('MAX(COALESCE(session_end, NOW())) as last_seen'),
+                \DB::raw('COUNT(*) as total_sessions'),
+                \DB::raw('SUM(TIMESTAMPDIFF(SECOND, session_start, COALESCE(session_end, NOW()))) as total_playtime')
+            )
+            ->groupBy('minecraft_id')
+            ->orderBy('first_join', 'desc')
+            ->get()
+            ->map(function ($session) {
+                $session->player_name = Player::getNameFromUuid($session->minecraft_id);
+                $session->is_online = PlayerSession::where('minecraft_id', $session->minecraft_id)
+                    ->where(function($query) {
+                        $query->where('server_id', 'game_' . $this->id)
+                            ->orWhere('server_id', 'lobby_' . $this->id);
+                    })
+                    ->whereNull('session_end')
+                    ->exists();
+                return $session;
+            });
     }
 }
