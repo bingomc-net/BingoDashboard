@@ -35,5 +35,13 @@ class ChatMessage extends Model
         return parent::tableQuery()->with('sender');
     }
 
+    public function onlinePlayers()
+    {
+        return PlayerSession::where(function($query) {
+            $query->where('server_id', 'game_' . $this->id)
+                ->orWhere('server_id', 'lobby_' . $this->id);
+        })
+            ->whereNull('session_end');
+    }
 
 }

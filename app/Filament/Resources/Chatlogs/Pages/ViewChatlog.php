@@ -10,6 +10,8 @@ class ViewChatlog extends ViewRecord
 {
     protected static string $resource = ChatlogResource::class;
 
+    public int $chatPage = 1;
+
     protected function getHeaderActions(): array
     {
         return [
