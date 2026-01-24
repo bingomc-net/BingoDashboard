@@ -11,12 +11,9 @@ class WeeklyScore extends Model
     protected $connection = 'mysql_minecraft';
     protected $table = 'bingo_stats_singleplayer';
 
-    // Use uuid as primary key for simplicity with Filament
     protected $primaryKey = 'uuid';
     public $incrementing = false;
     protected $keyType = 'string';
-
-    // No timestamps columns
     public $timestamps = false;
 
     protected $fillable = [
@@ -36,6 +33,8 @@ class WeeklyScore extends Model
         'game_settings' => 'array',
     ];
 
+    protected $appends = ['name', 'formatted_time'];
+
     protected static function booted()
     {
         // Apply global scope to filter current week by default
@@ -50,6 +49,7 @@ class WeeklyScore extends Model
         return $this->belongsTo(Player::class, 'uuid', 'uuid');
     }
 
+    // Extra stats accessors
     public function getItemTimesAttribute()
     {
         return $this->extra_stats['itemTimes'] ?? [];
@@ -75,8 +75,14 @@ class WeeklyScore extends Model
         return $this->extra_stats['seed'] ?? null;
     }
 
+    // Time calculation
     public function getTimeAttribute()
     {
+        // Check if time_seconds is already calculated by query
+        if (isset($this->attributes['time_seconds'])) {
+            return $this->attributes['time_seconds'];
+        }
+
         if ($this->game_start && $this->game_end) {
             return $this->game_start->diffInSeconds($this->game_end);
         }
@@ -89,10 +95,13 @@ class WeeklyScore extends Model
         $time = $this->time;
         if (!$time) return 'N/A';
 
-        $minutes = floor($time / 60);
+        $hours = floor($time / 3600);
+        $minutes = floor(($time % 3600) / 60);
         $seconds = $time % 60;
 
-        if ($minutes > 0) {
+        if ($hours > 0) {
+            return "{$hours}h {$minutes}m {$seconds}s";
+        } elseif ($minutes > 0) {
             return "{$minutes}m {$seconds}s";
         }
 
@@ -102,5 +111,31 @@ class WeeklyScore extends Model
     public function getNameAttribute()
     {
         return $this->player?->name ?? Player::getNameFromUuid($this->uuid) ?? 'Unknown';
+    }
+
+    // Scope for best times (one per player)
+    public function scopeBestTimes(Builder $query)
+    {
+        return $query->select([
+            'uuid',
+            DB::raw('MIN(TIMESTAMPDIFF(SECOND, game_start, game_end)) as best_time'),
+            DB::raw('MIN(game_end) as game_end'),
+        ])
+            ->groupBy('uuid');
+    }
+
+    // Scope for current week
+    public function scopeCurrentWeek(Builder $query)
+    {
+        return $query->whereRaw('YEARWEEK(game_end, 1) = YEARWEEK(CURDATE(), 1)');
+    }
+
+    // Scope for ranking
+    public function scopeWithRanking(Builder $query)
+    {
+        return $query->select([
+            '*',
+            DB::raw('RANK() OVER (ORDER BY TIMESTAMPDIFF(SECOND, game_start, game_end) ASC) as ranking')
+        ]);
     }
 }
