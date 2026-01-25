@@ -30,6 +30,7 @@ class Player extends Model
     {
         return static::all();
     }
+
     public function getBadgeAttribute(): ?array
     {
         $roles = $this->permissions
@@ -56,7 +57,8 @@ class Player extends Model
 
     public function latestSession()
     {
-        return $this->hasOne(PlayerSession::class, 'minecraft_id', 'uuid')->orderByDesc('session_start');
+        return $this->hasOne(PlayerSession::class, 'minecraft_id', 'uuid')
+            ->orderByDesc('session_start');
     }
 
     public static function getNameFromUuid(string $uuid): ?string
@@ -65,6 +67,7 @@ class Player extends Model
             ->where('uuid', $uuid)
             ->value('name');
     }
+
     public function discordConnection()
     {
         return $this->hasOne(DiscordConnections::class, 'minecraft_id');
@@ -133,7 +136,18 @@ class Player extends Model
 
     public function punishments()
     {
-        return $this->hasMany(Punischment::class, 'player_id'); // Adjust 'player_id' to your foreign key column name
+        return $this->hasMany(Punischment::class, 'player_id');
+    }
+
+    public function getIsOnlineAttribute(): bool
+    {
+        $latest = $this->sessions()->orderByDesc('session_start')->first();
+        return $latest && $latest->session_end === null;
+    }
+
+    public function getLastSessionAttribute()
+    {
+        return $this->latestSession?->session_start;
     }
 
     public function getBingoStatsSummary(): array
