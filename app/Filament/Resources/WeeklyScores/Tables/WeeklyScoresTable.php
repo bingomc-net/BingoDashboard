@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\WeeklyScores\Tables;
 
+use App\Filament\Resources\WeeklyScores\Actions\ViewPlayerHistoryAction;
+use Filament\Actions\DeleteAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Table;
@@ -33,8 +35,12 @@ class WeeklyScoresTable
                 TextColumn::make('ranking')
                     ->label('')
                     ->state(function ($record, $rowLoop) {
-                        // Use row loop iteration for ranking
-                        $rank = $rowLoop->iteration;
+                        // Calculate actual rank based on page
+                        $table = \Livewire\Livewire::current();
+                        $perPage = $table->getTableRecordsPerPage();
+                        $currentPage = $table->getTablePage();
+                        $rank = (($currentPage - 1) * $perPage) + $rowLoop->iteration;
+
                         return match($rank) {
                             1 => new HtmlString('<div style="font-size: 32px; text-align: center;">🥇</div>'),
                             2 => new HtmlString('<div style="font-size: 32px; text-align: center;">🥈</div>'),
@@ -78,19 +84,37 @@ class WeeklyScoresTable
                         return "{$seconds}s";
                     })
                     ->badge()
-                    ->color(fn ($record, $rowLoop) => match($rowLoop->iteration) {
-                        1 => 'primary',
-                        2 => 'info',
-                        3 => 'gray',
-                        default => 'gray',
+                    ->color(function ($record, $rowLoop) {
+                        // Calculate actual rank based on page
+                        $table = \Livewire\Livewire::current();
+                        $perPage = $table->getTableRecordsPerPage();
+                        $currentPage = $table->getTablePage();
+                        $rank = (($currentPage - 1) * $perPage) + $rowLoop->iteration;
+
+                        return match($rank) {
+                            1 => 'primary',
+                            2 => 'info',
+                            3 => 'gray',
+                            default => 'gray',
+                        };
                     }),
 
                 TextColumn::make('game_end')
                     ->label('Completed')
                     ->dateTime('M j, g:i A'),
             ])
+            ->actions([
+                ViewPlayerHistoryAction::make(),
+                DeleteAction::make()
+                    ->label(false)
+                    ->icon('heroicon-o-trash')
+                    ->color('gray')
+                    ->requiresConfirmation()
+                    ->modalHeading('Delete record')
+                    ->modalDescription('Are you sure you want to delete this? This action cannot be undone.')
+                    ->modalSubmitActionLabel('Yes, delete it'),
+            ])
             ->filters([
-                // Time Period Filter
                 SelectFilter::make('period')
                     ->label('Time Period')
                     ->options([
@@ -117,7 +141,6 @@ class WeeklyScoresTable
                         };
                     }),
 
-                // Game Type Filter
                 SelectFilter::make('game_type')
                     ->label('Game Type')
                     ->options([
