@@ -43,12 +43,13 @@ class ChatlogInfolist
                             ->badge()
                             ->color('gray')
                             ->columnSpan(1),
+
                         TextEntry::make('server_info.ip')
                             ->label('IP Address')
                             ->getStateUsing(function ($record) {
                                 $serverId = str_replace(['game_', 'lobby_'], '', $record->server);
                                 $server = \App\Models\BingoServer::find($serverId);
-                                return $server->ip ?? 'N/A';
+                                return $server?->ip ?? 'N/A';
                             })
                             ->copyable()
                             ->icon('heroicon-o-server'),
@@ -58,7 +59,7 @@ class ChatlogInfolist
                             ->getStateUsing(function ($record) {
                                 $serverId = str_replace(['game_', 'lobby_'], '', $record->server);
                                 $server = \App\Models\BingoServer::find($serverId);
-                                return $server->port ?? 'N/A';
+                                return $server?->port ?? 'N/A';
                             })
                             ->icon('heroicon-o-hashtag'),
 
@@ -67,7 +68,7 @@ class ChatlogInfolist
                             ->getStateUsing(function ($record) {
                                 $serverId = str_replace(['game_', 'lobby_'], '', $record->server);
                                 $server = \App\Models\BingoServer::find($serverId);
-                                return $server->state ?? 'UNKNOWN';
+                                return $server?->state ?? 'UNKNOWN';
                             })
                             ->badge()
                             ->color(fn (string $state): string => match ($state) {
@@ -82,7 +83,7 @@ class ChatlogInfolist
                             ->getStateUsing(function ($record) {
                                 $serverId = str_replace(['game_', 'lobby_'], '', $record->server);
                                 $server = \App\Models\BingoServer::find($serverId);
-                                return $server->variant ?? 'N/A';
+                                return $server?->variant ?? 'N/A';
                             })
                             ->icon('heroicon-o-puzzle-piece'),
 
@@ -91,7 +92,7 @@ class ChatlogInfolist
                             ->getStateUsing(function ($record) {
                                 $serverId = str_replace(['game_', 'lobby_'], '', $record->server);
                                 $server = \App\Models\BingoServer::find($serverId);
-                                return $server->players ?? '0';
+                                return $server?->players ?? '0';
                             })
                             ->icon('heroicon-o-users'),
 
@@ -100,7 +101,7 @@ class ChatlogInfolist
                             ->getStateUsing(function ($record) {
                                 $serverId = str_replace(['game_', 'lobby_'], '', $record->server);
                                 $server = \App\Models\BingoServer::find($serverId);
-                                return $server->restricted ? 'Yes' : 'No';
+                                return $server?->restricted ? 'Yes' : 'No';
                             })
                             ->badge()
                             ->color(fn ($state) => $state === 'Yes' ? 'warning' : 'success'),
