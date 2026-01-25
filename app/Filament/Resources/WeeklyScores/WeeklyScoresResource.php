@@ -46,6 +46,22 @@ class WeeklyScoresResource extends Resource
         ];
     }
 
+    public function isNextWeekCardSet(): bool
+    {
+        // Get next week's year and week number
+        $nextWeek = now()->addWeek();
+        $nextYear = $nextWeek->year;
+        $nextWeekNumber = $nextWeek->weekOfYear;
+
+        // Check if a card exists for next week
+        // Adjust this query based on your database structure
+        return \DB::connection('mysql_minecraft')
+            ->table('weekly_cards') // Replace with your actual table name
+            ->whereRaw('YEAR(week_start) = ?', [$nextYear])
+            ->whereRaw('WEEK(week_start, 1) = ?', [$nextWeekNumber])
+            ->exists();
+    }
+
     public static function getPages(): array
     {
         return [

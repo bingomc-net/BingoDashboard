@@ -51,4 +51,26 @@ class WeeklyCardWidget extends Widget
 
         return (int)ceil(sqrt(count($items)));
     }
+
+    public function isNextWeekCardSet(): bool
+    {
+        // Get next week's week number
+        $nextWeek = Carbon::now()->addWeek()->weekOfYear;
+
+        // Check if next week's card exists
+        $settingKey = $nextWeek == 1 ? 'weekly_card' : 'weekly_card_' . $nextWeek;
+
+        $setting = DB::connection('mysql_minecraft')
+            ->table('settings')
+            ->where('setting', $settingKey)
+            ->first();
+
+        // Return true if setting exists and has a non-empty value
+        if (!$setting || !$setting->value) {
+            return false;
+        }
+
+        $items = json_decode($setting->value, true) ?? [];
+        return !empty($items);
+    }
 }

@@ -13,8 +13,7 @@ class ViewPlayerHistoryAction
         return Action::make('history')
             ->label('History')
             ->icon('heroicon-o-clock')
-            ->color('gray')
-            ->button()
+            ->color('info')
             ->modalHeading(fn ($record) => $record->name . "'s Best Attempt")
             ->modalContent(function ($record) {
                 $service = app(BingoHistoryService::class);
@@ -37,7 +36,6 @@ class ViewPlayerHistoryAction
                 // Format and return HTML for just this one attempt
                 return new HtmlString($service->formatSingleAttempt($bestAttempt));
             })
-            ->modalWidth('3xl')
             ->modalSubmitAction(false)  // ← Hide submit button
             ->modalCancelAction(false)  // ← Hide cancel button
             ->slideOver();
