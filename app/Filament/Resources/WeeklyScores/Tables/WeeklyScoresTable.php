@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\WeeklyScores\Tables;
 
+use App\Filament\Resources\WeeklyScores\Actions\ViewPlayerHistoryAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Table;
@@ -9,6 +10,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Support\HtmlString;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use App\Filament\Resources\WeeklyScores\Actions\ViewHistoryAction;
 
 class WeeklyScoresTable
 {
@@ -33,7 +35,6 @@ class WeeklyScoresTable
                 TextColumn::make('ranking')
                     ->label('')
                     ->state(function ($record, $rowLoop) {
-                        // Use row loop iteration for ranking
                         $rank = $rowLoop->iteration;
                         return match($rank) {
                             1 => new HtmlString('<div style="font-size: 32px; text-align: center;">🥇</div>'),
@@ -89,8 +90,10 @@ class WeeklyScoresTable
                     ->label('Completed')
                     ->dateTime('M j, g:i A'),
             ])
+            ->actions([
+                ViewPlayerHistoryAction::make(),
+            ])
             ->filters([
-                // Time Period Filter
                 SelectFilter::make('period')
                     ->label('Time Period')
                     ->options([
@@ -117,7 +120,6 @@ class WeeklyScoresTable
                         };
                     }),
 
-                // Game Type Filter
                 SelectFilter::make('game_type')
                     ->label('Game Type')
                     ->options([
