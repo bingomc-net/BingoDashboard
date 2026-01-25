@@ -6,6 +6,7 @@ use App\Filament\Resources\Players\PlayerResource;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Cache;
@@ -33,13 +34,17 @@ class PlayersTable
                     ->searchable()
                     ->copyableState(fn ($record): string => (string) $record->id),
 
-                TextColumn::make('status')
-                    ->label('Status')
+                IconColumn::make('is_online')
+                    ->label('online')
+                    ->boolean()
                     ->getStateUsing(function ($record) {
                         $latest = $record->sessions->sortByDesc('session_start')->first();
-                        return $latest && $latest->session_end === null ? 'Online' : 'Offline';
+                        return $latest && $latest->session_end === null;
                     })
-                    ->formatStateUsing(fn ($state) => $state === 'Online' ? '🟢 Online' : '⚪ Offline')
+                    ->trueIcon('heroicon-o-check-circle')
+                    ->falseIcon('heroicon-o-x-circle')
+                    ->trueColor('success')
+                    ->falseColor('gray')
                     ->toggleable(),
 
                 TextColumn::make('uuid')
@@ -79,10 +84,19 @@ class PlayersTable
                         },
                     ]),
 
+                TextColumn::make('last_session')
+                    ->label('Last Session')
+                    ->getStateUsing(fn ($record) => $record->latestSession?->session_start)
+                    ->formatStateUsing(fn ($state) => $state ? \Illuminate\Support\Carbon::parse($state)->format('M j, H:i') : null)
+                    ->dateTime()
+                    ->toggleable(),
+
                 TextColumn::make('created_at')
+                    ->label('First Join')
                     ->sortable()
                     ->toggleable(),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 TernaryFilter::make('online')
                     ->label('Online')
