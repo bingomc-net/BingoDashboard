@@ -17,7 +17,7 @@
         @php
             $items = $this->getWeeklyCard();
             $gridSize = $this->getCardGridSize();
-            $nextWeekCardSet = $this->isNextWeekCardSet(); // You'll need to implement this method
+            $nextWeekCardSet = $this->isNextWeekCardSet();
         @endphp
 
         @if(empty($items))

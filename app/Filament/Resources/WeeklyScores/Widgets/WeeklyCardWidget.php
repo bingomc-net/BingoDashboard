@@ -17,8 +17,6 @@ class WeeklyCardWidget extends Widget
         // Get the current week number of the year
         $currentWeek = Carbon::now()->weekOfYear;
 
-        // Try to get the specific weekly card for this week
-        // Assuming weekly_card_1 is week 1, weekly_card_2 is week 2, etc.
         $settingKey = $currentWeek == 1 ? 'weekly_card' : 'weekly_card_' . $currentWeek;
 
         $setting = DB::connection('mysql_minecraft')

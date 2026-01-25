@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Players\Pages;
 
 use App\Filament\Resources\Players\PlayerResource;
-use App\Filament\Widgets\PlayerStatsWidget;
+use App\Filament\Resources\Players\Widgets\PlayerStatsWidget;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
