@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Widgets;
+namespace App\Filament\Resources\Players\Widgets;
 
 use App\Models\Player;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
@@ -54,7 +54,7 @@ class PlayerStatsWidget extends BaseWidget
                 ->chart($this->getWeeklyTrend()),
 
             Stat::make('Online Now', number_format($onlinePlayers))
-                ->description('Active in last 24h')
+                ->description('Currently online players')
                 ->descriptionIcon('heroicon-m-signal')
                 ->color('success')
                 ->extraAttributes([
