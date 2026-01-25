@@ -3,16 +3,12 @@
 namespace App\Filament\Resources\Players\Tables;
 
 use App\Filament\Resources\Players\PlayerResource;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\View\View;
 
 class PlayersTable
 {
